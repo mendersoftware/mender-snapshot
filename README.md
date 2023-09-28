@@ -9,7 +9,7 @@ Mender is an open source over-the-air (OTA) software updater for embedded Linux
 devices. Mender comprises a client running at the embedded device, as well as
 a server that manages deployments across many devices.
 
-This repository contains the `mender-snapshot` tool create an snapshot of the current running rootfs
+This repository contains the `mender-snapshot` tool create a snapshot of the current running rootfs
 partition. It is used by the `mender-artifact` tool to generate a "golden image" Artifact based on
 the current rootfs partition of a given device.
 

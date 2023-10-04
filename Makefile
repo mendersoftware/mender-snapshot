@@ -12,10 +12,15 @@ PKGFILES_notest = $(shell echo $(PKGFILES) | tr ' ' '\n' | grep -v '_test.go' )
 VERSION = $(shell git describe --tags --dirty --exact-match 2>/dev/null || git rev-parse --short HEAD)
 
 GO_LDFLAGS = \
-	-ldflags "-X github.com/mendersoftware/mender-snapshot/config.Version=$(VERSION)"
+	-ldflags "-X github.com/mendersoftware/mender-snapshot/conf.Version=$(VERSION)"
 
 ifeq ($(V),1)
 BUILDV = -v
+endif
+
+TAGS =
+ifneq ($(TAGS),)
+BUILDTAGS = -tags '$(TAGS)'
 endif
 
 build: mender-snapshot
@@ -24,7 +29,7 @@ clean:
 	@$(GO) clean
 
 mender-snapshot: $(PKGFILES)
-	@$(GO) build $(GO_LDFLAGS) $(BUILDV)
+	@$(GO) build $(GO_LDFLAGS) $(BUILDV) $(BUILDTAGS)
 
 install: install-bin
 

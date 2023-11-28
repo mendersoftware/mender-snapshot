@@ -1,6 +1,3 @@
-//go:build !urfave_cli_no_docs
-// +build !urfave_cli_no_docs
-
 package cli
 
 import (
@@ -83,14 +80,14 @@ func prepareCommands(commands []*Command, level int) []string {
 			usageText,
 		)
 
-		flags := prepareArgsWithValues(command.VisibleFlags())
+		flags := prepareArgsWithValues(command.Flags)
 		if len(flags) > 0 {
 			prepared += fmt.Sprintf("\n%s", strings.Join(flags, "\n"))
 		}
 
 		coms = append(coms, prepared)
 
-		// recursively iterate subcommands
+		// recursevly iterate subcommands
 		if len(command.Subcommands) > 0 {
 			coms = append(
 				coms,
@@ -153,14 +150,9 @@ func prepareFlags(
 // flagDetails returns a string containing the flags metadata
 func flagDetails(flag DocGenerationFlag) string {
 	description := flag.GetUsage()
-	if flag.TakesValue() {
-		defaultText := flag.GetDefaultText()
-		if defaultText == "" {
-			defaultText = flag.GetValue()
-		}
-		if defaultText != "" {
-			description += " (default: " + defaultText + ")"
-		}
+	value := flag.GetValue()
+	if value != "" {
+		description += " (default: " + value + ")"
 	}
 	return ": " + description
 }

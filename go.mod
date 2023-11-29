@@ -6,7 +6,7 @@ require (
 	github.com/mendersoftware/mender v0.0.0-20230928115926-719cc9990b5b
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
-	github.com/urfave/cli/v2 v2.25.7
+	github.com/urfave/cli/v2 v2.4.1
 	golang.org/x/sys v0.14.0
 	golang.org/x/term v0.14.0
 )

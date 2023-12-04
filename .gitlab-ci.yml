@@ -13,4 +13,5 @@ include:
       - '.gitlab-ci-check-license.yml'
 
 # Keep golang version aligned with latest yocto release
-image: golang:1.17-alpine3.16
+test:unit:
+  image: golang:1.17

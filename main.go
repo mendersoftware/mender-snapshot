@@ -14,8 +14,9 @@
 package main
 
 import (
-	"fmt"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/mendersoftware/mender-snapshot/cli"
 )
@@ -23,7 +24,7 @@ import (
 func main() {
 	err := cli.SetupCLI(os.Args)
 	if err != nil {
-		fmt.Printf("Got an error: %+v\n", err)
+		log.Error(err)
 		os.Exit(1)
 	}
 }

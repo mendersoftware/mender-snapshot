@@ -80,6 +80,12 @@ func SetupCLI(args []string) error {
 				Action:      runOptions.DumpSnapshot,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
+						Name:    "data",
+						Aliases: []string{"d"},
+						Usage:   "Mender state data `DIR`ECTORY path.",
+						Value:   snapshot_conf.DefaultDataStore,
+					},
+					&cli.StringFlag{
 						Name: "source",
 						Usage: "Path to target " +
 							"filesystem " +

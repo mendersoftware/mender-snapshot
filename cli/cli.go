@@ -89,7 +89,7 @@ func SetupCLI(args []string) error {
 						Name: "source",
 						Usage: "Path to target " +
 							"filesystem " +
-							"file/directory/device" +
+							"file/directory/device " +
 							"to snapshot.",
 						Value: "/",
 					},
@@ -104,7 +104,7 @@ func SetupCLI(args []string) error {
 					&cli.StringFlag{
 						Name:    "compression",
 						Aliases: []string{"C"},
-						Usage: "Compression type to use on the" +
+						Usage: "Compression type to use on the " +
 							"rootfs snapshot {none,gzip}",
 						Value: "none",
 					},

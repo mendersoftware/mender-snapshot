@@ -86,7 +86,18 @@ func newWatchDog() *watchDog {
 // DumpSnapshot copies a snapshot of the root filesystem to stdout.
 func (runOpts *runOptionsType) DumpSnapshot(ctx *cli.Context) error {
 
+	// Ensure we don't write logs to the filesystem
 	log.SetOutput(os.Stderr)
+	if ctx.Bool("quiet") {
+		log.SetLevel(log.ErrorLevel)
+	} else {
+		if lvl, err := log.ParseLevel(ctx.String("log-level")); err == nil {
+			log.SetLevel(lvl)
+		} else {
+			log.Warnf(
+				"Failed to parse set log level '%s'.", ctx.String("log-level"))
+		}
+	}
 
 	fd := int(os.Stdout.Fd())
 	// Make sure stdout is redirected (not a tty device)
@@ -103,12 +114,6 @@ func CopySnapshot(ctx *cli.Context, dst io.WriteCloser) error {
 	srcPath := ctx.String("source")
 	ss := &snapshot{dst: dst}
 	defer ss.cleanup()
-
-	// Ensure we don't write logs to the filesystem
-	log.SetOutput(os.Stderr)
-	if ctx.Bool("quiet") {
-		log.SetLevel(log.ErrorLevel)
-	}
 
 	srcID, err := ss.validateSrcDev(srcPath, ctx.String("data"))
 	if err != nil {

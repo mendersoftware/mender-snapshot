@@ -80,10 +80,16 @@ func SetupCLI(args []string) error {
 				Action:      runOptions.DumpSnapshot,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
+						Name:    "data",
+						Aliases: []string{"d"},
+						Usage:   "Mender state data `DIR`ECTORY path.",
+						Value:   snapshot_conf.DefaultDataStore,
+					},
+					&cli.StringFlag{
 						Name: "source",
 						Usage: "Path to target " +
 							"filesystem " +
-							"file/directory/device" +
+							"file/directory/device " +
 							"to snapshot.",
 						Value: "/",
 					},
@@ -98,7 +104,7 @@ func SetupCLI(args []string) error {
 					&cli.StringFlag{
 						Name:    "compression",
 						Aliases: []string{"C"},
-						Usage: "Compression type to use on the" +
+						Usage: "Compression type to use on the " +
 							"rootfs snapshot {none,gzip}",
 						Value: "none",
 					},

@@ -11,20 +11,8 @@
 //	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //	See the License for the specific language governing permissions and
 //	limitations under the License.
-package main
+package conf
 
-import (
-	"os"
-
-	log "github.com/sirupsen/logrus"
-
-	"github.com/mendersoftware/mender-snapshot/cli"
+const (
+	DefaultDataStore = "/var/lib/mender"
 )
-
-func main() {
-	err := cli.SetupCLI(os.Args)
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-}

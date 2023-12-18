@@ -1,17 +1,16 @@
 // Copyright 2023 Northern.tech AS
 //
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
+//	Licensed under the Apache License, Version 2.0 (the "License");
+//	you may not use this file except in compliance with the License.
+//	You may obtain a copy of the License at
 //
-//        http://www.apache.org/licenses/LICENSE-2.0
+//	    http://www.apache.org/licenses/LICENSE-2.0
 //
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
-
+//	Unless required by applicable law or agreed to in writing, software
+//	distributed under the License is distributed on an "AS IS" BASIS,
+//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//	See the License for the specific language governing permissions and
+//	limitations under the License.
 package system
 
 import (
@@ -27,15 +26,15 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+var (
+	ErrDevNotMounted = fmt.Errorf("device not mounted")
+	NotABlockDevice  = fmt.Errorf("not a block device")
+)
+
 const (
 	// ioctl magics from <linux/fs.h>
 	IOCTL_FIFREEZE_MAGIC uint = 0xC0045877 // _IOWR('X', 119, int)
 	IOCTL_FITHAW_MAGIC   uint = 0xC0045878 // _IOWR('X', 120, int)
-)
-
-var (
-	ErrDevNotMounted = fmt.Errorf("device not mounted")
-	NotABlockDevice  = fmt.Errorf("not a block device")
 )
 
 // MountInfo maps a single line in /proc/<pid|self>/mountinfo
@@ -64,6 +63,12 @@ type MountInfo struct {
 	TagFields []string // (7)
 	// SuperOptions: per super block options
 	SuperOptions []string // (11)
+}
+
+// GetBlockDeviceFromID returns the expanded path to the device with the
+// given device ID, devID, on the form [2]uint32{major, minor}
+func GetBlockDeviceFromID(devID [2]uint32) (string, error) {
+	return sys.DeviceFromID(devID)
 }
 
 // GetMountInfoFromDeviceID parses /proc/self/mountinfo and, on success, returns
@@ -137,10 +142,62 @@ func GetMountInfoFromDeviceID(devID [2]uint32) (*MountInfo, error) {
 	return nil, ErrDevNotMounted
 }
 
-// GetBlockDeviceFromID returns the expanded path to the device with the
-// given device ID, devID, on the form [2]uint32{major, minor}
-func GetBlockDeviceFromID(devID [2]uint32) (string, error) {
-	return sys.DeviceFromID(devID)
+// FreezeFS freezes the filesystem for which the inode that fd points to belongs
+// to, maintaining read-consistency. All write operations to the filesystem will
+// be blocked until ThawFS is called.
+func FreezeFS(fd int) error {
+	err := sys.IoctlSetInt(fd, IOCTL_FIFREEZE_MAGIC, 0)
+	if err != nil {
+		return errors.Wrap(err, "error freezing fs from writing")
+	}
+	return nil
+}
+
+func GetBlockDeviceSize(file *os.File) (uint64, error) {
+	var devSize uint64
+	var err error
+	_, _, errno := sys.RawSyscall(
+		uintptr(unix.SYS_IOCTL), uintptr(file.Fd()),
+		uintptr(unsafe.Pointer(uintptr(unix.BLKGETSIZE64))),
+		uintptr(unsafe.Pointer(&devSize)))
+
+	if errno != 0 {
+		// ENOTTY: Inappropriate I/O control operation - in this context
+		// it means that the file descriptor is not a block-device
+		if errno == unix.ENOTTY {
+			// Check if it is an UBI block device
+			devSize, err = getUbiDeviceSize(file)
+			if err != nil {
+				return 0, err
+			}
+		} else {
+			return 0, errors.New(errno.Error())
+		}
+	}
+	return devSize, nil
+}
+
+func getUbiDeviceSize(file *os.File) (uint64, error) {
+	dev := strings.TrimPrefix(file.Name(), "/dev/")
+
+	reservedEraseBlocks := sysfs.Class.Object("ubi").SubObject(dev).Attribute("reserved_ebs")
+	ebSize := sysfs.Class.Object("ubi").SubObject(dev).Attribute("usable_eb_size")
+
+	if !reservedEraseBlocks.Exists() || !ebSize.Exists() {
+		return 0, NotABlockDevice
+	}
+
+	sectorSize, err := ebSize.ReadUint64()
+	if err != nil {
+		return 0, NotABlockDevice
+	}
+
+	reservedSectors, err := reservedEraseBlocks.ReadUint64()
+	if err != nil {
+		return 0, NotABlockDevice
+	}
+
+	return reservedSectors * sectorSize, nil
 }
 
 // GetDeviceIDFromPath retrieves the device id for the block device pointed to by
@@ -176,129 +233,6 @@ func GetDeviceIDFromPath(path string) ([2]uint32, error) {
 	}
 	return [2]uint32{^uint32(0), ^uint32(0)},
 		fmt.Errorf("invalid stat(2) st_mode %04X", devType)
-}
-
-// GetPipeSize returns the buffer-size of a pipe or 1 if the file descriptor
-// is not a pipe.
-func GetPipeSize(fd int) int {
-	return sys.GetPipeSize(fd)
-}
-
-func IsUbiBlockDevice(deviceName string) bool {
-	return sysfs.Class.Object("ubi").SubObject(deviceName).Exists()
-}
-
-func SetUbiUpdateVolume(file *os.File, imageSize uint64) error {
-	_, _, errno := sys.RawSyscall(
-		uintptr(unix.SYS_IOCTL), file.Fd(),
-		uintptr(unix.UBI_IOCVOLUP),
-		uintptr(unsafe.Pointer(&imageSize)))
-	if errno != 0 {
-		return errno
-	}
-
-	return nil
-}
-
-func getUbiDeviceSectorSize(file *os.File) (int, error) {
-	dev := strings.TrimPrefix(file.Name(), "/dev/")
-
-	ebSize := sysfs.Class.Object("ubi").SubObject(dev).Attribute("usable_eb_size")
-
-	if !ebSize.Exists() {
-		return 0, NotABlockDevice
-	}
-
-	sectorSize, err := ebSize.ReadUint64()
-	if err != nil {
-		return 0, NotABlockDevice
-	}
-
-	return int(sectorSize), nil
-}
-
-func getUbiDeviceSize(file *os.File) (uint64, error) {
-	dev := strings.TrimPrefix(file.Name(), "/dev/")
-
-	reservedEraseBlocks := sysfs.Class.Object("ubi").SubObject(dev).Attribute("reserved_ebs")
-	ebSize := sysfs.Class.Object("ubi").SubObject(dev).Attribute("usable_eb_size")
-
-	if !reservedEraseBlocks.Exists() || !ebSize.Exists() {
-		return 0, NotABlockDevice
-	}
-
-	sectorSize, err := ebSize.ReadUint64()
-	if err != nil {
-		return 0, NotABlockDevice
-	}
-
-	reservedSectors, err := reservedEraseBlocks.ReadUint64()
-	if err != nil {
-		return 0, NotABlockDevice
-	}
-
-	return reservedSectors * sectorSize, nil
-}
-
-func GetBlockDeviceSectorSize(file *os.File) (int, error) {
-	var sectorSize int
-	var err error
-
-	_, _, errno := sys.RawSyscall(
-		uintptr(unix.SYS_IOCTL),
-		file.Fd(),
-		uintptr(unix.BLKSSZGET),
-		uintptr(unsafe.Pointer(&sectorSize)))
-
-	if errno != 0 {
-		// ENOTTY: Inappropriate I/O control operation - in this context
-		// it means that the file descriptor is not a block-device
-		if errno == unix.ENOTTY {
-			// Check if it is an UBI block device
-			sectorSize, err = getUbiDeviceSectorSize(file)
-			if err != nil {
-				return 0, err
-			}
-		} else {
-			return 0, errors.New(errno.Error())
-		}
-	}
-	return sectorSize, nil
-}
-
-func GetBlockDeviceSize(file *os.File) (uint64, error) {
-	var devSize uint64
-	var err error
-	_, _, errno := sys.RawSyscall(
-		uintptr(unix.SYS_IOCTL), uintptr(file.Fd()),
-		uintptr(unsafe.Pointer(uintptr(unix.BLKGETSIZE64))),
-		uintptr(unsafe.Pointer(&devSize)))
-
-	if errno != 0 {
-		// ENOTTY: Inappropriate I/O control operation - in this context
-		// it means that the file descriptor is not a block-device
-		if errno == unix.ENOTTY {
-			// Check if it is an UBI block device
-			devSize, err = getUbiDeviceSize(file)
-			if err != nil {
-				return 0, err
-			}
-		} else {
-			return 0, errors.New(errno.Error())
-		}
-	}
-	return devSize, nil
-}
-
-// FreezeFS freezes the filesystem for which the inode that fd points to belongs
-// to, maintaining read-consistency. All write operations to the filesystem will
-// be blocked until ThawFS is called.
-func FreezeFS(fd int) error {
-	err := sys.IoctlSetInt(fd, IOCTL_FIFREEZE_MAGIC, 0)
-	if err != nil {
-		return errors.Wrap(err, "error freezing fs from writing")
-	}
-	return nil
 }
 
 // ThawFS unfreezes the filesystem after FreezeFS is called.

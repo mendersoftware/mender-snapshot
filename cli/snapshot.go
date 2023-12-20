@@ -27,8 +27,8 @@ import (
 	"github.com/urfave/cli/v2"
 	"golang.org/x/sys/unix"
 
-	"github.com/mendersoftware/mender/system"
-	"github.com/mendersoftware/mender/utils"
+	"github.com/mendersoftware/mender-snapshot/system"
+	"github.com/mendersoftware/mender-snapshot/utils"
 )
 
 const (

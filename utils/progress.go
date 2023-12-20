@@ -18,30 +18,13 @@ import (
 )
 
 type ProgressWriter struct {
-	bar      *progressbar.Bar
-	finished bool
+	bar *progressbar.Bar
 }
 
 func NewProgressWriter(size int64) *ProgressWriter {
 	return &ProgressWriter{
 		bar: progressbar.New(size),
 	}
-}
-
-func (p *ProgressWriter) Write(data []byte) (int, error) {
-	if p.finished {
-		return len(data), nil
-	}
-	n := len(data)
-	if p.bar == nil {
-		return n, nil
-	}
-	p.bar.Tick(int64(n))
-	if p.bar.Percentage == 100 {
-		p.bar.Finish()
-		p.finished = true
-	}
-	return n, nil
 }
 
 func (p *ProgressWriter) Tick(n uint64) {

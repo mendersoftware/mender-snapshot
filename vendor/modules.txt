@@ -21,9 +21,12 @@ github.com/sirupsen/logrus
 # github.com/ungerik/go-sysfs v0.0.0-20210209091351-68e6f4d6bff9
 ## explicit
 github.com/ungerik/go-sysfs
-# github.com/urfave/cli/v2 v2.4.1
-## explicit; go 1.11
+# github.com/urfave/cli/v2 v2.27.1
+## explicit; go 1.18
 github.com/urfave/cli/v2
+# github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673
+## explicit
+github.com/xrash/smetrics
 # golang.org/x/sys v0.15.0
 ## explicit; go 1.18
 golang.org/x/sys/plan9

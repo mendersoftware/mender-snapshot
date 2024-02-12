@@ -8,7 +8,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/ungerik/go-sysfs v0.0.0-20210209091351-68e6f4d6bff9
 	github.com/urfave/cli/v2 v2.4.1
-	golang.org/x/sys v0.16.0
+	golang.org/x/sys v0.17.0
 	golang.org/x/term v0.16.0
 )
 

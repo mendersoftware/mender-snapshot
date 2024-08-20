@@ -3,7 +3,7 @@ module github.com/mendersoftware/mender-snapshot
 go 1.17
 
 require (
-	github.com/creack/pty v1.1.21
+	github.com/creack/pty v1.1.23
 	github.com/mendersoftware/progressbar v0.0.3
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3

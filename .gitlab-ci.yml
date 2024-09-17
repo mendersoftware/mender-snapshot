@@ -14,4 +14,4 @@ include:
 
 # Keep golang version aligned with latest yocto release
 test:unit:
-  image: golang:1.17
+  image: golang:1.18

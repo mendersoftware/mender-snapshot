@@ -25,10 +25,12 @@ import (
 )
 
 func TestDumpNoRedirect(t *testing.T) {
+	old := os.Stdout // keep backup of the real stdout
+
 	// Create a pseudo terminal to capture stdout
 	ptmx, tty, err := pty.Open()
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
 	}
 
 	defer ptmx.Close()
@@ -39,19 +41,28 @@ func TestDumpNoRedirect(t *testing.T) {
 	args := []string{"snapshot", "dump"}
 	err = SetupCLI(args)
 	if err == nil {
-		log.Error("Expected error")
+		log.Fatal("Expected error")
 	}
 	assert.ErrorContains(t, err, "Refusing to write to terminal")
+
+	os.Stdout = old // restoring the real stdout
+
 }
 
 func TestVersion(t *testing.T) {
-	r, w, _ := os.Pipe()
+	old := os.Stdout // keep backup of the real stdout
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	os.Stdout = w
 
 	args := []string{"snapshot", "--version"}
-	err := SetupCLI(args)
+	err = SetupCLI(args)
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
 	}
 
 	w.Close()
@@ -59,4 +70,6 @@ func TestVersion(t *testing.T) {
 
 	read_line := strings.TrimSpace(string(out))
 	assert.Equal(t, ShowVersion(), read_line)
+
+	os.Stdout = old // restoring the real stdout
 }

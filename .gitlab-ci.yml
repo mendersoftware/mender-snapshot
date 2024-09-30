@@ -12,6 +12,9 @@ include:
       - '.gitlab-ci-check-commits.yml'
       - '.gitlab-ci-check-license.yml'
 
-# Keep golang version aligned with latest yocto release
-test:unit:
-  image: golang:1.17
+# Test that we can build with the golang version of the oldest supported yocto LTS release
+test:backwards-compatibility:
+  image: golang:1.17.13-bullseye
+  needs: []
+  script:
+    - go build

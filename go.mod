@@ -1,6 +1,6 @@
 module github.com/mendersoftware/mender-snapshot
 
-go 1.17
+go 1.23.0
 
 require (
 	github.com/creack/pty v1.1.24
@@ -10,8 +10,8 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/ungerik/go-sysfs v0.0.0-20210209091351-68e6f4d6bff9
 	github.com/urfave/cli/v2 v2.4.1
-	golang.org/x/sys v0.30.0
-	golang.org/x/term v0.29.0
+	golang.org/x/sys v0.33.0
+	golang.org/x/term v0.32.0
 )
 
 require (

@@ -47,3 +47,4 @@ issue. We thank you in advance for your cooperation.
 * Fork us on [Github](https://github.com/mendersoftware)
 * Create an issue in the [bugtracker](https://northerntech.atlassian.net/projects/MEN)
 * Email us at [contact@mender.io](mailto:contact@mender.io)
+

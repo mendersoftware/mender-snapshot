@@ -1,18 +1,18 @@
 module github.com/mendersoftware/mender-snapshot
 
-go 1.22
+go 1.25.0
 
 require (
 	github.com/creack/pty v1.1.24
 	github.com/mendersoftware/progressbar v0.0.4
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.11.1
+	github.com/sirupsen/logrus v1.10.2
+	github.com/stretchr/testify v1.12.1
 	github.com/ungerik/go-sysfs v0.0.0-20210209091351-68e6f4d6bff9
 	github.com/urfave/cli/v2 v2.27.7
-	github.com/urfave/cli/v3 v3.10.1
-	golang.org/x/sys v0.30.0
-	golang.org/x/term v0.29.0
+	github.com/urfave/cli/v3 v3.11.0
+	golang.org/x/sys v0.47.0
+	golang.org/x/term v0.45.0
 )
 
 require (
@@ -23,6 +23,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -10,7 +10,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/ungerik/go-sysfs v0.0.0-20210209091351-68e6f4d6bff9
 	github.com/urfave/cli/v2 v2.27.7
-	github.com/urfave/cli/v3 v3.10.1
+	github.com/urfave/cli/v3 v3.11.0
 	golang.org/x/sys v0.30.0
 	golang.org/x/term v0.29.0
 )

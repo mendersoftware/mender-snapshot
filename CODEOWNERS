@@ -1,4 +1,0 @@
-# Dependency updates
-go.mod @mendersoftware/client-dependabot-reviewers
-go.sum @mendersoftware/client-dependabot-reviewers
-.gitlab-ci.yml @mendersoftware/client-dependabot-reviewers
